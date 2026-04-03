@@ -1,0 +1,16 @@
+{
+  "name": "listdiff",
+  "version": "1.0.0",
+  "description": "A clean, fast tool to compare two lists and find differences, intersections, and unions.",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ci": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "vitest": "^3.1.1"
+  },
+  "author": "Nitish Jadia",
+  "license": "MIT"
+}

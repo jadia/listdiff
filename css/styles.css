@@ -1,0 +1,1047 @@
+/**
+ * styles.css — ListDiff Design System & Styles
+ * ===============================================
+ * This single CSS file contains the ENTIRE visual design of ListDiff.
+ *
+ * ARCHITECTURE:
+ * 1. CSS Custom Properties (variables) at the top — all colors, spacing, fonts
+ * 2. Reset / base styles
+ * 3. Layout (header, main, footer)
+ * 4. Component styles (panels, toolbars, buttons, results)
+ * 5. Theme toggle component
+ * 6. Split dialog (modal)
+ * 7. Toast notifications
+ * 8. Animations / keyframes
+ * 9. Responsive breakpoints
+ *
+ * THEMING:
+ * All colors use CSS custom properties. A single [data-theme="dark"]
+ * selector on <html> swaps every color on the page instantly.
+ */
+
+/* ============================================================
+   GOOGLE FONTS IMPORT
+   Using Inter — a clean, modern sans-serif designed for screens.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   1. CSS CUSTOM PROPERTIES
+   All design tokens live here. Change a variable, and the entire
+   UI updates. This is the foundation of the design system.
+   ============================================================ */
+:root {
+  /* --- Colors: Light Theme (default) --- */
+  --bg-primary: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-surface-alt: #F1F5F9;
+  --bg-surface-hover: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --border: #E2E8F0;
+  --border-focus: #3B82F6;
+
+  /* Accent */
+  --accent: #3B82F6;
+  --accent-hover: #2563EB;
+  --accent-light: #DBEAFE;
+  --accent-text: #FFFFFF;
+
+  /* Result section colors */
+  --a-only-bg: #EFF6FF;
+  --a-only-border: #BFDBFE;
+  --a-only-header: #1E40AF;
+  --a-only-badge: #3B82F6;
+
+  --b-only-bg: #FFFBEB;
+  --b-only-border: #FDE68A;
+  --b-only-header: #92400E;
+  --b-only-badge: #D97706;
+
+  --intersection-bg: #ECFDF5;
+  --intersection-border: #A7F3D0;
+  --intersection-header: #065F46;
+  --intersection-badge: #059669;
+
+  --union-bg: #F5F3FF;
+  --union-border: #DDD6FE;
+  --union-header: #5B21B6;
+  --union-badge: #7C3AED;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Theme toggle specific */
+  --toggle-bg: #E2E8F0;
+  --toggle-knob: #F59E0B;
+  --toggle-icon-active: #F59E0B;
+  --toggle-icon-inactive: #94A3B8;
+}
+
+/* --- Colors: Dark Theme --- */
+[data-theme="dark"] {
+  --bg-primary: #0F172A;
+  --bg-surface: #1E293B;
+  --bg-surface-alt: #334155;
+  --bg-surface-hover: #475569;
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-muted: #64748B;
+  --border: #334155;
+  --border-focus: #38BDF8;
+
+  --accent: #38BDF8;
+  --accent-hover: #22D3EE;
+  --accent-light: #0C4A6E;
+  --accent-text: #0F172A;
+
+  --a-only-bg: #1E293B;
+  --a-only-border: #1E40AF;
+  --a-only-header: #60A5FA;
+  --a-only-badge: #3B82F6;
+
+  --b-only-bg: #1E293B;
+  --b-only-border: #92400E;
+  --b-only-header: #FBBF24;
+  --b-only-badge: #D97706;
+
+  --intersection-bg: #1E293B;
+  --intersection-border: #065F46;
+  --intersection-header: #34D399;
+  --intersection-badge: #059669;
+
+  --union-bg: #1E293B;
+  --union-border: #5B21B6;
+  --union-header: #A78BFA;
+  --union-badge: #7C3AED;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+
+  --toggle-bg: #475569;
+  --toggle-knob: #818CF8;
+  --toggle-icon-active: #818CF8;
+  --toggle-icon-inactive: #475569;
+}
+
+/* ============================================================
+   2. RESET & BASE STYLES
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  transition: background-color var(--transition-slow), color var(--transition-slow);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   3. LAYOUT
+   ============================================================ */
+
+/* --- Header --- */
+.header {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: background-color var(--transition-slow), border-color var(--transition-slow);
+}
+
+.header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.header__logo {
+  width: 36px;
+  height: 36px;
+}
+
+.header__title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.header__tagline {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-left: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--border);
+}
+
+/* --- Main Content --- */
+.main {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
+}
+
+/* --- Footer --- */
+.footer {
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  padding: var(--space-4) var(--space-6);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  transition: background-color var(--transition-slow), border-color var(--transition-slow);
+}
+
+.footer span {
+  margin: 0 var(--space-2);
+}
+
+.footer__heart {
+  color: #ef4444;
+  margin: 0 2px;
+}
+
+/* ============================================================
+   4. INPUT PANELS
+   ============================================================ */
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.input-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal),
+              background-color var(--transition-slow);
+}
+
+.input-panel:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-lg), 0 0 0 3px var(--accent-light);
+}
+
+.input-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface-alt);
+  border-bottom: 1px solid var(--border);
+  transition: background-color var(--transition-slow);
+}
+
+.input-panel__label {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input-panel__stats {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.input-panel__stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.input-panel__stat-value {
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 1.5em;
+  text-align: center;
+}
+
+.input-panel textarea {
+  width: 100%;
+  min-height: 220px;
+  padding: var(--space-4);
+  border: none;
+  outline: none;
+  resize: vertical;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: var(--font-size-sm);
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  transition: background-color var(--transition-slow), color var(--transition-slow);
+}
+
+.input-panel textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* --- Input Toolbar --- */
+.input-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-surface-alt);
+  border-top: 1px solid var(--border);
+  transition: background-color var(--transition-slow);
+}
+
+/* ============================================================
+   5. BUTTONS
+   ============================================================ */
+
+/* --- Icon Button (toolbar) --- */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-icon:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+
+.btn-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2;
+}
+
+/* --- Primary Button (Compare) --- */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-8);
+  border: none;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: var(--accent-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-md), 0 0 0 0 rgba(59, 130, 246, 0);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Subtle pulse glow animation on hover */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+  background: radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, transparent 70%);
+}
+
+.btn-primary:hover::after {
+  opacity: 1;
+}
+
+.btn-primary .shortcut-hint {
+  font-size: var(--font-size-xs);
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+/* ============================================================
+   6. OPTIONS PANEL
+   ============================================================ */
+.options-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-slow), border-color var(--transition-slow);
+}
+
+.options-panel__title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-4);
+}
+
+.options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-8);
+  align-items: center;
+}
+
+/* --- Checkbox --- */
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  user-select: none;
+  transition: color var(--transition-slow);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  position: relative;
+  background: var(--bg-surface);
+  transition: all var(--transition-fast);
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-label input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- Select Dropdown --- */
+.select-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.select-wrapper label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.select-wrapper select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: var(--space-8);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748B' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  transition: all var(--transition-fast);
+}
+
+.select-wrapper select:hover {
+  border-color: var(--text-muted);
+}
+
+.select-wrapper select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* ============================================================
+   7. COMPARE BUTTON AREA
+   ============================================================ */
+.compare-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-10);
+}
+
+/* ============================================================
+   8. RESULTS SECTION
+   ============================================================ */
+.results-section {
+  display: none;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
+}
+
+.results-section.visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  animation: fadeSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+/* --- Result Panel --- */
+.result-panel {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: box-shadow var(--transition-normal);
+}
+
+.result-panel:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.result-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.result-panel__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.result-panel__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: white;
+}
+
+/* Animation for count badges */
+.result-panel__count.pop {
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.result-panel textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  outline: none;
+  resize: vertical;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: var(--font-size-sm);
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  transition: background-color var(--transition-slow), color var(--transition-slow);
+}
+
+.result-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface-alt);
+  transition: background-color var(--transition-slow);
+}
+
+/* --- Color coding per result type --- */
+.result-panel--a-only {
+  border: 1px solid var(--a-only-border);
+  background: var(--a-only-bg);
+}
+.result-panel--a-only .result-panel__header {
+  background: var(--a-only-bg);
+  color: var(--a-only-header);
+}
+.result-panel--a-only .result-panel__count {
+  background: var(--a-only-badge);
+}
+
+.result-panel--b-only {
+  border: 1px solid var(--b-only-border);
+  background: var(--b-only-bg);
+}
+.result-panel--b-only .result-panel__header {
+  background: var(--b-only-bg);
+  color: var(--b-only-header);
+}
+.result-panel--b-only .result-panel__count {
+  background: var(--b-only-badge);
+}
+
+.result-panel--intersection {
+  border: 1px solid var(--intersection-border);
+  background: var(--intersection-bg);
+}
+.result-panel--intersection .result-panel__header {
+  background: var(--intersection-bg);
+  color: var(--intersection-header);
+}
+.result-panel--intersection .result-panel__count {
+  background: var(--intersection-badge);
+}
+
+.result-panel--union {
+  border: 1px solid var(--union-border);
+  background: var(--union-bg);
+}
+.result-panel--union .result-panel__header {
+  background: var(--union-bg);
+  color: var(--union-header);
+}
+.result-panel--union .result-panel__count {
+  background: var(--union-badge);
+}
+
+/* ============================================================
+   9. THEME TOGGLE
+   A pill-shaped toggle with sun/moon icons and slide animation.
+   ============================================================ */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 64px;
+  height: 32px;
+  padding: 3px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--toggle-bg);
+  cursor: pointer;
+  position: relative;
+  transition: background-color var(--transition-normal);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.theme-toggle__icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: color var(--transition-normal), transform var(--transition-normal);
+  font-size: 14px;
+}
+
+.theme-toggle__icon--sun {
+  color: var(--toggle-icon-active);
+}
+
+.theme-toggle__icon--moon {
+  color: var(--toggle-icon-inactive);
+}
+
+.theme-toggle--dark .theme-toggle__icon--sun {
+  color: var(--toggle-icon-inactive);
+}
+
+.theme-toggle--dark .theme-toggle__icon--moon {
+  color: var(--toggle-icon-active);
+}
+
+.theme-toggle__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform var(--transition-normal);
+}
+
+/* When dark mode, slide knob to the right */
+.theme-toggle--dark .theme-toggle__knob {
+  transform: translateX(32px);
+}
+
+/* Bounce animation on click */
+.theme-toggle__knob.animate {
+  animation: knobBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Icon rotation on theme change */
+.theme-toggle--dark .theme-toggle__icon--moon {
+  animation: iconSpin 0.5s ease;
+}
+
+.theme-toggle:not(.theme-toggle--dark) .theme-toggle__icon--sun {
+  animation: iconSpin 0.5s ease;
+}
+
+/* ============================================================
+   10. SPLIT DIALOG (Modal)
+   ============================================================ */
+.dialog-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.dialog-overlay.visible {
+  display: flex;
+  opacity: 1;
+}
+
+.dialog {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  width: 90%;
+  max-width: 400px;
+  box-shadow: var(--shadow-lg);
+  animation: fadeSlideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.dialog__title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+  color: var(--text-primary);
+}
+
+.dialog__body {
+  margin-bottom: var(--space-5);
+}
+
+.dialog__body select,
+.dialog__body input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-2);
+}
+
+.dialog__body label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+.dialog__actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.btn-dialog {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-dialog:hover {
+  background: var(--bg-surface-hover);
+}
+
+.btn-dialog--primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.btn-dialog--primary:hover {
+  background: var(--accent-hover);
+}
+
+#split-custom-wrapper {
+  display: none;
+  margin-top: var(--space-3);
+}
+
+/* ============================================================
+   11. TOAST NOTIFICATIONS
+   ============================================================ */
+#toast-container {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all var(--transition-normal);
+  pointer-events: auto;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ============================================================
+   12. ANIMATIONS / KEYFRAMES
+   ============================================================ */
+
+/* Count badge pop-in animation */
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Results section slide up */
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Theme toggle knob bounce */
+@keyframes knobBounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.85); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Combined with dark mode position */
+.theme-toggle--dark .theme-toggle__knob.animate {
+  animation: knobBounceDark 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes knobBounceDark {
+  0% { transform: translateX(32px) scale(1); }
+  30% { transform: translateX(32px) scale(0.85); }
+  60% { transform: translateX(32px) scale(1.1); }
+  100% { transform: translateX(32px) scale(1); }
+}
+
+/* Icon spin */
+@keyframes iconSpin {
+  0% { transform: rotate(0deg) scale(0.8); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* ============================================================
+   13. RESPONSIVE DESIGN
+   ============================================================ */
+
+/* Tablet and below */
+@media (max-width: 768px) {
+  .header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .header__tagline {
+    display: none;
+  }
+
+  .main {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .input-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .results-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .input-panel textarea {
+    min-height: 160px;
+  }
+
+  .options-grid {
+    gap: var(--space-3) var(--space-4);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: var(--space-4);
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .header__title {
+    font-size: var(--font-size-base);
+  }
+
+  .input-toolbar {
+    gap: 2px;
+  }
+
+  .btn-icon {
+    padding: 2px 4px;
+    font-size: 0.65rem;
+  }
+}

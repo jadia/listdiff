@@ -1,0 +1,48 @@
+{
+  "site": {
+    "name": "ListDiff",
+    "tagline": "Compare lists instantly",
+    "description": "A clean, fast tool to compare two lists and find differences, intersections, and unions.",
+    "basePath": "/listdiff",
+    "version": "1.0.0",
+    "footerText": "Made with <span class=\"footer__heart\">❤</span>"
+  },
+  "firebase": {
+    "apiKey": "AIzaSyBbTnV5UIgUpySHl1rjwfjJP-BtybpDe4E",
+    "authDomain": "listdiff-171b5.firebaseapp.com",
+    "projectId": "listdiff-171b5",
+    "storageBucket": "listdiff-171b5.firebasestorage.app",
+    "messagingSenderId": "1030492287324",
+    "appId": "1:1030492287324:web:32d35cfc78e40e36125199",
+    "measurementId": "G-C5D6M2268R"
+  },
+  "analytics": {
+    "enabled": true,
+    "collectionName": "audit_logs",
+    "maxItemsPerList": 100,
+    "maxItemLength": 200,
+    "rateLimits": {
+      "compare": 3000,
+      "copy": 2000,
+      "theme_toggle": 2000,
+      "page_load": "once"
+    }
+  },
+  "defaults": {
+    "caseSensitive": true,
+    "ignoreBeginEndSpaces": true,
+    "ignoreExtraSpaces": true,
+    "ignoreLeadingZeroes": false,
+    "lineNumbered": false,
+    "sortOption": "none",
+    "caseTransform": "none",
+    "theme": "light"
+  },
+  "features": {
+    "themeToggle": true,
+    "splitDialog": true,
+    "toastNotifications": true,
+    "keyboardShortcuts": true,
+    "liveCounts": true
+  }
+}

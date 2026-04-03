@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <!--
+    ListDiff — Compare Lists Instantly
+    ====================================
+    A clean, modern tool for comparing two lists of items.
+    Finds what's unique to each list, what they share, and their union.
+
+    SECURITY:
+    - Content Security Policy restricts what resources can load
+    - All user input is sanitized before rendering
+    - No eval(), no innerHTML with raw user data
+  -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO Meta Tags -->
+  <title>ListDiff — Compare Lists Instantly</title>
+  <meta name="description" content="A clean, fast tool to compare two lists and find differences, intersections, and unions. Free, private, and works entirely in your browser.">
+  <meta name="keywords" content="list compare, diff tool, compare lists online, list difference, set operations">
+
+  <!-- Open Graph (social sharing) -->
+  <meta property="og:title" content="ListDiff — Compare Lists Instantly">
+  <meta property="og:description" content="Compare two lists and find what's unique, shared, or combined. Fast, free, and private.">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="./css/styles.css">
+
+  <!--
+    Firebase SDK via Import Map
+    ============================
+    Import maps let us use bare module specifiers like 'firebase/app'
+    in our JavaScript without a build tool (Webpack, Vite, etc.).
+    The browser resolves these to CDN URLs at runtime.
+
+    We use the modular Firebase SDK (v11.x) which supports tree-shaking.
+    Only the modules we import (app, firestore) are loaded.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER
+       Sticky header with brand name, tagline, and theme toggle.
+       ============================================================ -->
+  <header class="header" role="banner">
+    <div class="header__brand">
+      <!-- Inline SVG Logo — two overlapping list icons with a diff indicator -->
+      <svg class="header__logo" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="2" y="4" width="20" height="28" rx="3" fill="var(--accent)" opacity="0.2" stroke="var(--accent)" stroke-width="1.5"/>
+        <rect x="14" y="4" width="20" height="28" rx="3" fill="var(--accent)" opacity="0.15" stroke="var(--accent)" stroke-width="1.5"/>
+        <line x1="7" y1="12" x2="17" y2="12" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="7" y1="18" x2="15" y2="18" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="7" y1="24" x2="13" y2="24" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="19" y1="12" x2="29" y2="12" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="21" y1="18" x2="29" y2="18" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="23" y1="24" x2="29" y2="24" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <h1 class="header__title" id="site-title">ListDiff</h1>
+      <span class="header__tagline" id="site-tagline">Compare lists instantly</span>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode">
+      <span class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">☀️</span>
+      <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">🌙</span>
+      <span class="theme-toggle__knob"></span>
+    </button>
+  </header>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main class="main" role="main">
+
+    <!-- INPUT SECTION: Two side-by-side panels for List A and List B -->
+    <div class="input-grid">
+
+      <!-- List A Panel -->
+      <div class="input-panel" id="panel-a">
+        <div class="input-panel__header">
+          <span class="input-panel__label">List A</span>
+          <div class="input-panel__stats">
+            <span class="input-panel__stat">
+              Lines: <span class="input-panel__stat-value" id="lines-a">0</span>
+            </span>
+            <span class="input-panel__stat">
+              Dupes: <span class="input-panel__stat-value" id="dupes-a">0</span>
+            </span>
+          </div>
+        </div>
+        <textarea id="input-a" placeholder="Paste your first list here...&#10;One item per line" spellcheck="false" aria-label="List A input"></textarea>
+        <div class="input-toolbar">
+          <button class="btn-icon" data-action="move" data-target="a" data-to="b" title="Move A → B">A → B</button>
+          <button class="btn-icon" data-action="split" data-target="a" title="Split by delimiter">✂ Split</button>
+          <button class="btn-icon" data-action="trim" data-target="a" title="Trim & Deduplicate">⊜ Trim</button>
+          <button class="btn-icon" data-action="sort" data-target="a" title="Sort A-Z">↕ Sort</button>
+          <button class="btn-icon" data-action="reverse" data-target="a" title="Reverse order">⇅ Rev</button>
+          <button class="btn-icon" data-action="copy" data-target="a" title="Copy to clipboard">⎘ Copy</button>
+          <button class="btn-icon" data-action="clear" data-target="a" title="Clear list">✕ Clear</button>
+        </div>
+      </div>
+
+      <!-- List B Panel -->
+      <div class="input-panel" id="panel-b">
+        <div class="input-panel__header">
+          <span class="input-panel__label">List B</span>
+          <div class="input-panel__stats">
+            <span class="input-panel__stat">
+              Lines: <span class="input-panel__stat-value" id="lines-b">0</span>
+            </span>
+            <span class="input-panel__stat">
+              Dupes: <span class="input-panel__stat-value" id="dupes-b">0</span>
+            </span>
+          </div>
+        </div>
+        <textarea id="input-b" placeholder="Paste your second list here...&#10;One item per line" spellcheck="false" aria-label="List B input"></textarea>
+        <div class="input-toolbar">
+          <button class="btn-icon" data-action="move" data-target="b" data-to="a" title="Move B → A">B → A</button>
+          <button class="btn-icon" data-action="split" data-target="b" title="Split by delimiter">✂ Split</button>
+          <button class="btn-icon" data-action="trim" data-target="b" title="Trim & Deduplicate">⊜ Trim</button>
+          <button class="btn-icon" data-action="sort" data-target="b" title="Sort A-Z">↕ Sort</button>
+          <button class="btn-icon" data-action="reverse" data-target="b" title="Reverse order">⇅ Rev</button>
+          <button class="btn-icon" data-action="copy" data-target="b" title="Copy to clipboard">⎘ Copy</button>
+          <button class="btn-icon" data-action="clear" data-target="b" title="Clear list">✕ Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPTIONS PANEL -->
+    <div class="options-panel">
+      <div class="options-panel__title">Comparison Options</div>
+      <div class="options-grid">
+        <!-- Checkboxes -->
+        <label class="checkbox-label">
+          <input type="checkbox" id="opt-case-sensitive" checked>
+          Case Sensitive
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="opt-ignore-begin-end" checked>
+          Ignore Begin/End Spaces
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="opt-ignore-extra" checked>
+          Ignore Extra Spaces
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="opt-ignore-zeroes">
+          Ignore Leading Zeroes
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="opt-line-numbered">
+          Line Numbered
+        </label>
+
+        <!-- Dropdowns -->
+        <div class="select-wrapper">
+          <label for="opt-sort">Sort:</label>
+          <select id="opt-sort">
+            <option value="none">No Sort</option>
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+        <div class="select-wrapper">
+          <label for="opt-case-transform">Case:</label>
+          <select id="opt-case-transform">
+            <option value="none">No Change</option>
+            <option value="lower">Lowercase</option>
+            <option value="upper">Uppercase</option>
+            <option value="title">Title Case</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARE BUTTON -->
+    <div class="compare-section">
+      <button id="btn-compare" class="btn-primary" type="button">
+        ▶ Compare Lists
+        <span class="shortcut-hint">(Ctrl+Enter)</span>
+      </button>
+    </div>
+
+    <!-- RESULTS SECTION (hidden until comparison is run) -->
+    <section id="results-section" class="results-section" aria-label="Comparison Results">
+      <div class="results-grid">
+
+        <!-- A Only -->
+        <div class="result-panel result-panel--a-only">
+          <div class="result-panel__header">
+            <div class="result-panel__title">
+              <span>A Only</span>
+            </div>
+            <span class="result-panel__count" id="count-a-only">0</span>
+          </div>
+          <textarea id="result-a-only" readonly aria-label="Items only in List A"></textarea>
+          <div class="result-toolbar">
+            <button class="btn-icon" data-action="trim" data-target="a-only">⊜ Trim</button>
+            <button class="btn-icon" data-action="sort" data-target="a-only">↕ Sort</button>
+            <button class="btn-icon" data-action="reverse" data-target="a-only">⇅ Rev</button>
+            <button class="btn-icon" data-action="copy" data-target="a-only">⎘ Copy</button>
+          </div>
+        </div>
+
+        <!-- B Only -->
+        <div class="result-panel result-panel--b-only">
+          <div class="result-panel__header">
+            <div class="result-panel__title">
+              <span>B Only</span>
+            </div>
+            <span class="result-panel__count" id="count-b-only">0</span>
+          </div>
+          <textarea id="result-b-only" readonly aria-label="Items only in List B"></textarea>
+          <div class="result-toolbar">
+            <button class="btn-icon" data-action="trim" data-target="b-only">⊜ Trim</button>
+            <button class="btn-icon" data-action="sort" data-target="b-only">↕ Sort</button>
+            <button class="btn-icon" data-action="reverse" data-target="b-only">⇅ Rev</button>
+            <button class="btn-icon" data-action="copy" data-target="b-only">⎘ Copy</button>
+          </div>
+        </div>
+
+        <!-- Intersection (A ∩ B) -->
+        <div class="result-panel result-panel--intersection">
+          <div class="result-panel__header">
+            <div class="result-panel__title">
+              <span>A ∩ B</span>
+            </div>
+            <span class="result-panel__count" id="count-intersection">0</span>
+          </div>
+          <textarea id="result-intersection" readonly aria-label="Items in both List A and List B"></textarea>
+          <div class="result-toolbar">
+            <button class="btn-icon" data-action="trim" data-target="intersection">⊜ Trim</button>
+            <button class="btn-icon" data-action="sort" data-target="intersection">↕ Sort</button>
+            <button class="btn-icon" data-action="reverse" data-target="intersection">⇅ Rev</button>
+            <button class="btn-icon" data-action="copy" data-target="intersection">⎘ Copy</button>
+          </div>
+        </div>
+
+        <!-- Union (A ∪ B) -->
+        <div class="result-panel result-panel--union">
+          <div class="result-panel__header">
+            <div class="result-panel__title">
+              <span>A ∪ B</span>
+            </div>
+            <span class="result-panel__count" id="count-union">0</span>
+          </div>
+          <textarea id="result-union" readonly aria-label="All unique items from both lists"></textarea>
+          <div class="result-toolbar">
+            <button class="btn-icon" data-action="trim" data-target="union">⊜ Trim</button>
+            <button class="btn-icon" data-action="sort" data-target="union">↕ Sort</button>
+            <button class="btn-icon" data-action="reverse" data-target="union">⇅ Rev</button>
+            <button class="btn-icon" data-action="copy" data-target="union">⎘ Copy</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       SPLIT DIALOG (Modal)
+       Appears when user clicks the "Split" toolbar button.
+       ============================================================ -->
+  <div id="split-dialog" class="dialog-overlay" role="dialog" aria-labelledby="split-dialog-title">
+    <div class="dialog">
+      <h2 class="dialog__title" id="split-dialog-title">Split by Delimiter</h2>
+      <div class="dialog__body">
+        <label for="split-delimiter">Choose a delimiter:</label>
+        <select id="split-delimiter">
+          <option value="auto">Auto (comma, semicolon, colon, tab)</option>
+          <option value="comma">Comma (,)</option>
+          <option value="semicolon">Semicolon (;)</option>
+          <option value="pipe">Pipe (|)</option>
+          <option value="tab">Tab</option>
+          <option value="custom">Custom...</option>
+        </select>
+        <div id="split-custom-wrapper">
+          <label for="split-custom">Custom delimiter:</label>
+          <input type="text" id="split-custom" placeholder="Enter delimiter character(s)">
+        </div>
+      </div>
+      <div class="dialog__actions">
+        <button id="split-cancel" class="btn-dialog" type="button">Cancel</button>
+        <button id="split-confirm" class="btn-dialog btn-dialog--primary" type="button">Split</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="footer" role="contentinfo">
+    <span id="footer-text">Made with <span class="footer__heart">❤</span></span>
+    <span>·</span>
+    <span>ListDiff <span id="footer-version">v1.0.0</span></span>
+  </footer>
+
+  <!--
+    Application Entry Point
+    ========================
+    type="module" enables ES module syntax (import/export).
+    The `defer` behavior is automatic for modules — they execute
+    after the DOM is ready, so we don't need DOMContentLoaded.
+  -->
+  <script type="module" src="./js/app.js"></script>
+
+</body>
+</html>

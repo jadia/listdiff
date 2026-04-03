@@ -1,0 +1,90 @@
+# GitHub Actions Workflow: Deploy ListDiff to GitHub Pages
+# ==========================================================
+# This workflow runs on every push to `main`.
+# It does two things:
+# 1. Runs the test suite (vitest)
+# 2. Deploys the static site to GitHub Pages
+#
+# IMPORTANT PREREQUISITES:
+# - Go to repo Settings → Pages → Source → "GitHub Actions"
+# - This tells GitHub Pages to use the artifact from this workflow
+#   instead of looking for a gh-pages branch.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ['main']
+
+  # Allows manual triggering from the Actions tab
+  workflow_dispatch:
+
+# Grant permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only allow one deployment at a time
+# (skip queued runs between the latest and currently running)
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  # ---- Job 1: Run Tests ----
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+  # ---- Job 2: Deploy to Pages ----
+  deploy:
+    name: Deploy
+    needs: test  # Only deploy if tests pass
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      #
+      # Upload the entire repo root as the Pages artifact.
+      # Since this is a static site with no build step,
+      # the files are ready to serve as-is.
+      #
+      # We exclude dev-only files that shouldn't be deployed:
+      # - node_modules/
+      # - tests/
+      # - vitest.config.js
+      # - package.json / package-lock.json
+      #
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
