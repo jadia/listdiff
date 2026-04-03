@@ -46,7 +46,16 @@
 | **↕ Sort** | Sorts items alphabetically (A-Z) |
 | **⇅ Reverse** | Reverses the order of items |
 | **⎘ Copy** | Copies the textarea content to clipboard |
-| **✕ Clear** | Clears the textarea (highlights red on hover) |
+| **✕ Clear** | Clears the textarea (with destructive red-hover alert) |
+
+### 3.4 Advanced Interactive Features (New)
+
+| Feature | Description |
+|---|---|
+| **Drag & Drop** | Dropping `.txt` or `.csv` files into a textarea appends the file content to existing text. |
+| **Live Highlighting** | Transparent textarea with a backdrop layer that highlights lines identical to the other list in real-time. |
+| **Quick Copy** | Small floating copy icons in result panels with glare animations and localized "Copied!" flash feedback. |
+| **History Sidebar** | Right-side sliding panel containing past comparison snapshots with timestamps and deletion controls. |
 
 ### 2.3 Split Dialog
 
@@ -146,6 +155,13 @@ If allowed → write to Firestore collection "audit_logs"
 | **Firebase Firestore** | Free tier, schemaless, real-time, easy setup |
 | **Import Maps** | Load Firebase SDK from CDN without bundler |
 | **Vitest** | Fast, ES-module-native test runner |
+
+## 6. Storage & Session Management
+-   **LocalStorage (Browser-only)**: History snapshots are stored locally.
+-   **Session IDs**: Unique IDs generated per tab session (persists until refresh).
+-   **Snapshot structure**: Stores List A, List B, Options, and a Timestamp. Limits to top 20 recent entries.
+
+## 7. Performance Considerations
 
 ---
 

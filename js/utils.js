@@ -456,3 +456,18 @@ export function toTitleCase(str) {
     .toLowerCase()
     .replace(/(?:^|\s)\S/g, match => match.toUpperCase());
 }
+
+/**
+ * Generates a random alphanumeric ID.
+ *
+ * @param {number} length - Desired length of the ID
+ * @returns {string} Random ID string
+ */
+export function generateId(length = 8) {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}

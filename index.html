@@ -32,6 +32,18 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="./css/styles.css">
 
+  <!-- Sidebar / History -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <h2>Recent Comparisons</h2>
+      <button id="sidebar-close" class="sidebar-close" aria-label="Close sidebar">✕</button>
+    </div>
+    <div id="history-list" class="sidebar-content">
+      <!-- History items injected here -->
+    </div>
+  </aside>
+
   <!--
     Firebase SDK via Import Map
     ============================
@@ -74,12 +86,19 @@
       <span class="header__tagline" id="site-tagline">Compare lists instantly</span>
     </div>
 
-    <!-- Theme Toggle Button -->
-    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode">
-      <span class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">☀️</span>
-      <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">🌙</span>
-      <span class="theme-toggle__knob"></span>
-    </button>
+    <div class="header__actions">
+      <button id="history-toggle" class="history-toggle" title="Show Recent Comparisons" aria-label="History">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </button>
+      <div id="theme-toggle" class="theme-toggle" role="button" aria-label="Toggle theme" tabindex="0">
+        <span class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">☀️</span>
+        <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">🌙</span>
+        <span class="theme-toggle__knob"></span>
+      </div>
+    </div>
   </header>
 
   <!-- ============================================================
@@ -103,7 +122,10 @@
             </span>
           </div>
         </div>
-        <textarea id="input-a" placeholder="Paste your first list here...&#10;One item per line" spellcheck="false" aria-label="List A input"></textarea>
+        <div class="textarea-container">
+          <div id="backdrop-a" class="textarea-backdrop"></div>
+          <textarea id="input-a" placeholder="Paste or drag & drop your first list here...&#10;One item per line" spellcheck="false" aria-label="List A input"></textarea>
+        </div>
         <div class="input-toolbar">
           <button class="btn-icon" data-action="move" data-target="a" data-to="b" title="Move A → B">A → B</button>
           <button class="btn-icon" data-action="split" data-target="a" title="Split by delimiter">✂ Split</button>
@@ -111,7 +133,6 @@
           <button class="btn-icon" data-action="dedupe" data-target="a" title="Remove identical items from the list">⊜ Dedupe</button>
           <button class="btn-icon" data-action="sort" data-target="a" title="Sort A-Z">↕ Sort</button>
           <button class="btn-icon" data-action="reverse" data-target="a" title="Reverse order">⇅ Rev</button>
-          <button class="btn-icon" data-action="copy" data-target="a" title="Copy to clipboard">⎘ Copy</button>
           <button class="btn-icon" data-action="clear" data-target="a" title="Clear list">✕ Clear</button>
         </div>
       </div>
@@ -129,7 +150,10 @@
             </span>
           </div>
         </div>
-        <textarea id="input-b" placeholder="Paste your second list here...&#10;One item per line" spellcheck="false" aria-label="List B input"></textarea>
+        <div class="textarea-container">
+          <div id="backdrop-b" class="textarea-backdrop"></div>
+          <textarea id="input-b" placeholder="Paste or drag & drop your second list here...&#10;One item per line" spellcheck="false" aria-label="List B input"></textarea>
+        </div>
         <div class="input-toolbar">
           <button class="btn-icon" data-action="move" data-target="b" data-to="a" title="Move B → A">B → A</button>
           <button class="btn-icon" data-action="split" data-target="b" title="Split by delimiter">✂ Split</button>
@@ -137,7 +161,6 @@
           <button class="btn-icon" data-action="dedupe" data-target="b" title="Remove identical items from the list">⊜ Dedupe</button>
           <button class="btn-icon" data-action="sort" data-target="b" title="Sort A-Z">↕ Sort</button>
           <button class="btn-icon" data-action="reverse" data-target="b" title="Reverse order">⇅ Rev</button>
-          <button class="btn-icon" data-action="copy" data-target="b" title="Copy to clipboard">⎘ Copy</button>
           <button class="btn-icon" data-action="clear" data-target="b" title="Clear list">✕ Clear</button>
         </div>
       </div>
@@ -203,74 +226,74 @@
       <div class="results-grid">
 
         <!-- A Only -->
-        <div class="result-panel result-panel--a-only">
-          <div class="result-panel__header">
-            <div class="result-panel__title">
-              <span>A Only</span>
-            </div>
-            <span class="result-panel__count" id="count-a-only">0</span>
+        <div class="result-panel panel-a-only">
+          <div class="result-header">
+            <h3>A Only <span id="count-a-only" class="count-badge">0</span></h3>
+            <button class="quick-copy" data-action="copy" data-target="a-only" title="Copy results">
+              <span class="flash-text">Copied!</span>
+              <span class="copy-icon">⎘</span>
+            </button>
           </div>
           <textarea id="result-a-only" readonly aria-label="Items only in List A"></textarea>
           <div class="result-toolbar">
             <button class="btn-icon" data-action="trim" data-target="a-only" title="Remove leading/trailing spaces and empty lines">⊣⊢ Trim</button>
             <button class="btn-icon" data-action="dedupe" data-target="a-only" title="Remove identical items from the list">⊜ Dedupe</button>
-            <button class="btn-icon" data-action="sort" data-target="a-only">↕ Sort</button>
-            <button class="btn-icon" data-action="reverse" data-target="a-only">⇅ Rev</button>
-            <button class="btn-icon" data-action="copy" data-target="a-only">⎘ Copy</button>
+            <button class="btn-icon" data-action="sort" data-target="a-only" title="Sort A-Z">↕ Sort</button>
+            <button class="btn-icon" data-action="reverse" data-target="a-only" title="Reverse order">⇅ Rev</button>
           </div>
         </div>
 
         <!-- B Only -->
-        <div class="result-panel result-panel--b-only">
-          <div class="result-panel__header">
-            <div class="result-panel__title">
-              <span>B Only</span>
-            </div>
-            <span class="result-panel__count" id="count-b-only">0</span>
+        <div class="result-panel panel-b-only">
+          <div class="result-header">
+            <h3>B Only <span id="count-b-only" class="count-badge">0</span></h3>
+            <button class="quick-copy" data-action="copy" data-target="b-only" title="Copy results">
+              <span class="flash-text">Copied!</span>
+              <span class="copy-icon">⎘</span>
+            </button>
           </div>
           <textarea id="result-b-only" readonly aria-label="Items only in List B"></textarea>
           <div class="result-toolbar">
             <button class="btn-icon" data-action="trim" data-target="b-only" title="Remove leading/trailing spaces and empty lines">⊣⊢ Trim</button>
             <button class="btn-icon" data-action="dedupe" data-target="b-only" title="Remove identical items from the list">⊜ Dedupe</button>
-            <button class="btn-icon" data-action="sort" data-target="b-only">↕ Sort</button>
-            <button class="btn-icon" data-action="reverse" data-target="b-only">⇅ Rev</button>
-            <button class="btn-icon" data-action="copy" data-target="b-only">⎘ Copy</button>
+            <button class="btn-icon" data-action="sort" data-target="b-only" title="Sort A-Z">↕ Sort</button>
+            <button class="btn-icon" data-action="reverse" data-target="b-only" title="Reverse order">⇅ Rev</button>
           </div>
         </div>
 
         <!-- Intersection (A ∩ B) -->
-        <div class="result-panel result-panel--intersection">
-          <div class="result-panel__header">
-            <div class="result-panel__title">
-              <span>A ∩ B</span>
-            </div>
-            <span class="result-panel__count" id="count-intersection">0</span>
+        <div class="result-panel panel-intersection">
+          <div class="result-header">
+            <h3>A ∩ B <span id="count-intersection" class="count-badge">0</span></h3>
+            <button class="quick-copy" data-action="copy" data-target="intersection" title="Copy results">
+              <span class="flash-text">Copied!</span>
+              <span class="copy-icon">⎘</span>
+            </button>
           </div>
           <textarea id="result-intersection" readonly aria-label="Items in both List A and List B"></textarea>
           <div class="result-toolbar">
             <button class="btn-icon" data-action="trim" data-target="intersection" title="Remove leading/trailing spaces and empty lines">⊣⊢ Trim</button>
             <button class="btn-icon" data-action="dedupe" data-target="intersection" title="Remove identical items from the list">⊜ Dedupe</button>
-            <button class="btn-icon" data-action="sort" data-target="intersection">↕ Sort</button>
-            <button class="btn-icon" data-action="reverse" data-target="intersection">⇅ Rev</button>
-            <button class="btn-icon" data-action="copy" data-target="intersection">⎘ Copy</button>
+            <button class="btn-icon" data-action="sort" data-target="intersection" title="Sort A-Z">↕ Sort</button>
+            <button class="btn-icon" data-action="reverse" data-target="intersection" title="Reverse order">⇅ Rev</button>
           </div>
         </div>
 
         <!-- Union (A ∪ B) -->
-        <div class="result-panel result-panel--union">
-          <div class="result-panel__header">
-            <div class="result-panel__title">
-              <span>A ∪ B</span>
-            </div>
-            <span class="result-panel__count" id="count-union">0</span>
+        <div class="result-panel panel-union">
+          <div class="result-header">
+            <h3>A ∪ B <span id="count-union" class="count-badge">0</span></h3>
+            <button class="quick-copy" data-action="copy" data-target="union" title="Copy results">
+              <span class="flash-text">Copied!</span>
+              <span class="copy-icon">⎘</span>
+            </button>
           </div>
           <textarea id="result-union" readonly aria-label="All unique items from both lists"></textarea>
           <div class="result-toolbar">
             <button class="btn-icon" data-action="trim" data-target="union" title="Remove leading/trailing spaces and empty lines">⊣⊢ Trim</button>
             <button class="btn-icon" data-action="dedupe" data-target="union" title="Remove identical items from the list">⊜ Dedupe</button>
-            <button class="btn-icon" data-action="sort" data-target="union">↕ Sort</button>
-            <button class="btn-icon" data-action="reverse" data-target="union">⇅ Rev</button>
-            <button class="btn-icon" data-action="copy" data-target="union">⎘ Copy</button>
+            <button class="btn-icon" data-action="sort" data-target="union" title="Sort A-Z">↕ Sort</button>
+            <button class="btn-icon" data-action="reverse" data-target="union" title="Reverse order">⇅ Rev</button>
           </div>
         </div>
 

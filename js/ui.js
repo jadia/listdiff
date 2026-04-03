@@ -25,7 +25,14 @@ import {
   countDuplicates,
   debounce,
   getClientInfo,
+  generateId,
 } from './utils.js';
+import {
+  createSessionId,
+  saveSnapshot,
+  getHistory,
+  deleteEntry
+} from './history.js';
 
 // ============================================================================
 // MODULE STATE
@@ -36,6 +43,9 @@ let logAction = async () => {};
 
 /** Reference to the config object */
 let config = {};
+
+/** Current session ID */
+let sessionId = '';
 
 // ============================================================================
 // INITIALIZATION
@@ -50,6 +60,7 @@ let config = {};
 export function initUI(appConfig, analyticsLogAction) {
   config = appConfig;
   logAction = analyticsLogAction || (async () => {});
+  sessionId = createSessionId();
 
   /* Set defaults from config for checkboxes and dropdowns */
   setDefaults(config.defaults);
@@ -58,11 +69,16 @@ export function initUI(appConfig, analyticsLogAction) {
   bindInputListeners();
   bindToolbarListeners();
   bindCompareButton();
-  bindOptionsListeners();
   bindKeyboardShortcuts();
+  bindDragDropListeners();
+  bindHistoryListeners();
+  bindQuickCopyListeners();
 
   /* Set site metadata from config */
   setSiteMetadata();
+
+  /* Update initial history state */
+  refreshHistoryUI();
 
   /* Update initial counts */
   updateCounts('A');
@@ -139,16 +155,88 @@ function setValue(id, value) {
 function bindInputListeners() {
   const textA = document.getElementById('input-a');
   const textB = document.getElementById('input-b');
+  const backdropA = document.getElementById('backdrop-a');
+  const backdropB = document.getElementById('backdrop-b');
+
+  const updateAll = () => {
+    updateCounts('A');
+    updateCounts('B');
+    updateHighlighting();
+  };
+
+  const debouncedUpdate = debounce(updateAll, 150);
 
   if (textA) {
-    const debouncedCountA = debounce(() => updateCounts('A'), 150);
-    textA.addEventListener('input', debouncedCountA);
+    textA.addEventListener('input', debouncedUpdate);
+    textA.addEventListener('scroll', () => {
+      if (backdropA) backdropA.scrollTop = textA.scrollTop;
+    });
   }
 
   if (textB) {
-    const debouncedCountB = debounce(() => updateCounts('B'), 150);
-    textB.addEventListener('input', debouncedCountB);
+    textB.addEventListener('input', debouncedUpdate);
+    textB.addEventListener('scroll', () => {
+      if (backdropB) backdropB.scrollTop = textB.scrollTop;
+    });
   }
+}
+
+/**
+ * Live Highlighting Comparison.
+ * Synchronizes matching lines between List A and List B in the backdrops.
+ */
+function updateHighlighting() {
+  const textA = document.getElementById('input-a')?.value || '';
+  const textB = document.getElementById('input-b')?.value || '';
+  const backdropA = document.getElementById('backdrop-a');
+  const backdropB = document.getElementById('backdrop-b');
+
+  if (!backdropA || !backdropB) return;
+
+  const linesA = textA.split(/\r?\n/);
+  const linesB = textB.split(/\r?\n/);
+
+  /* Build normalized sets for O(1) matching */
+  const options = readOptions();
+  const setA = new Set(linesA.map(l => normalizeForHighlight(l, options)));
+  const setB = new Set(linesB.map(l => normalizeForHighlight(l, options)));
+
+  renderBackdrop(backdropA, linesA, setB, options);
+  renderBackdrop(backdropB, linesB, setA, options);
+}
+
+/**
+ * Normalizes a line for the purpose of matching highlights.
+ */
+function normalizeForHighlight(line, options) {
+  let val = line;
+  if (options.ignoreBeginEndSpaces) val = val.trim();
+  if (options.ignoreExtraSpaces) val = val.replace(/\s+/g, ' ');
+  if (!options.caseSensitive) val = val.toLowerCase();
+  return val;
+}
+
+/**
+ * Renders the backdrop HTML with matches wrapped in <mark>.
+ */
+function renderBackdrop(el, lines, matchSet, options) {
+  const html = lines.map(line => {
+    const normalized = normalizeForHighlight(line, options);
+    const isMatch = line.trim() !== '' && matchSet.has(normalized);
+    const escaped = escapeHtml(line);
+    return isMatch ? `<mark>${escaped}</mark>` : escaped;
+  }).join('\n') + '\n'; // Add trailing newline to match textarea behavior
+
+  el.innerHTML = html;
+}
+
+/**
+ * Escapes HTML to prevent XSS in backdrops.
+ */
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
 }
 
 /**
@@ -187,15 +275,44 @@ function updateCounts(list) {
  * JS:   Read data-action and data-target, call the right function.
  */
 function bindToolbarListeners() {
-  /* Input toolbars (List A and List B) */
+  /* Input toolbars */
   document.querySelectorAll('.input-toolbar [data-action]').forEach(btn => {
     btn.addEventListener('click', () => handleToolbarAction(btn, 'input'));
   });
 
-  /* Result toolbars (A Only, B Only, A∩B, A∪B) */
+  /* Result toolbars */
   document.querySelectorAll('.result-toolbar [data-action]').forEach(btn => {
     btn.addEventListener('click', () => handleToolbarAction(btn, 'result'));
   });
+}
+
+/**
+ * Binds Quick Copy buttons in result panels.
+ */
+function bindQuickCopyListeners() {
+  document.querySelectorAll('.quick-copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+      const textarea = document.getElementById(`result-${target}`);
+      if (!textarea) return;
+
+      copyToClipboard(textarea.value).then(success => {
+        if (success) {
+          triggerQuickCopyAnimation(btn);
+        }
+      });
+    });
+  });
+}
+
+/**
+ * Triggers the pop animation and flash text for the quick copy button.
+ */
+function triggerQuickCopyAnimation(btn) {
+  btn.classList.add('flashing');
+  setTimeout(() => {
+    btn.classList.remove('flashing');
+  }, 1500);
 }
 
 /**
@@ -294,6 +411,7 @@ function handleToolbarAction(btn, area) {
       /* Clear the textarea */
       textarea.value = '';
       showToast('Cleared');
+      updateHighlighting();
       break;
     }
   }
@@ -301,6 +419,7 @@ function handleToolbarAction(btn, area) {
   /* Update counts after any modification to an input textarea */
   if (area === 'input') {
     updateCounts(target.toUpperCase());
+    updateHighlighting();
   }
 }
 
@@ -433,6 +552,10 @@ function runComparison() {
     },
     clientInfo: getClientInfo(),
   });
+
+  /* Save to history */
+  saveSnapshot(sessionId, { listA, listB, options });
+  refreshHistoryUI();
 }
 
 /**
@@ -497,16 +620,169 @@ function renderResultPanel(id, items) {
 }
 
 // ============================================================================
-// OPTIONS LISTENERS
+// DRAG & DROP
 // ============================================================================
 
 /**
- * Binds change events to option controls.
- * Currently used for live re-comparison when options change (optional feature).
+ * Binds drag and drop events to the input panels.
  */
-function bindOptionsListeners() {
-  /* No auto-recompare for now — user must click the Compare button */
+function bindDragDropListeners() {
+  const panels = document.querySelectorAll('.input-panel');
+
+  panels.forEach(panel => {
+    const textarea = panel.querySelector('textarea');
+    if (!textarea) return;
+
+    panel.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      panel.classList.add('drag-over');
+    });
+
+    panel.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      panel.classList.add('drag-over');
+    });
+
+    panel.addEventListener('dragleave', (e) => {
+      /* Prevent flickering when dragging over children elements */
+      if (!panel.contains(e.relatedTarget)) {
+        panel.classList.remove('drag-over');
+      }
+    });
+
+    panel.addEventListener('drop', (e) => {
+      e.preventDefault();
+      panel.classList.remove('drag-over');
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileDrop(files[0], textarea);
+      }
+    });
+  });
 }
+
+/**
+ * Reads a dropped file and appends its content to the textarea.
+ */
+function handleFileDrop(file, textarea) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target.result;
+    const currentVal = textarea.value.trim();
+    textarea.value = currentVal ? `${currentVal}\n${content}` : content;
+    
+    /* Trigger updates */
+    const list = textarea.id.endsWith('-a') ? 'A' : 'B';
+    updateCounts(list);
+    updateHighlighting();
+    showToast(`Appended: ${file.name}`);
+  };
+  reader.readAsText(file);
+}
+
+// ============================================================================
+// HISTORY SIDEBAR
+// ============================================================================
+
+/**
+ * Binds history sidebar toggle and delete logic.
+ */
+function bindHistoryListeners() {
+  const toggleBtn = document.getElementById('history-toggle');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const closeBtn = document.getElementById('sidebar-close');
+
+  const openSidebar = () => {
+    sidebar.classList.add('sidebar--open');
+    overlay.classList.add('sidebar-overlay--visible');
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('sidebar--open');
+    overlay.classList.remove('sidebar-overlay--visible');
+  };
+
+  toggleBtn?.addEventListener('click', openSidebar);
+  closeBtn?.addEventListener('click', closeSidebar);
+  overlay?.addEventListener('click', closeSidebar);
+}
+
+/**
+ * Refreshes the History Sidebar content and visibility based on local state.
+ */
+function refreshHistoryUI() {
+  const history = getHistory();
+  const toggleBtn = document.getElementById('history-toggle');
+  const listEl = document.getElementById('history-list');
+
+  /* Visibility: Hide if no records */
+  if (history.length === 0) {
+    toggleBtn.style.display = 'none';
+    return;
+  }
+  toggleBtn.style.display = 'flex';
+
+  if (!listEl) return;
+
+  listEl.innerHTML = '';
+  history.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'history-item';
+    
+    // Check if this card represents the current session
+    if (item.sessionId === sessionId) {
+      card.classList.add('history-item--current');
+    }
+
+    const dateStr = new Date(item.timestamp).toLocaleString();
+
+    card.innerHTML = `
+      <span class="history-item__id">${item.sessionId}</span>
+      <span class="history-item__time">${dateStr}</span>
+      <button class="history-item__delete" title="Delete history entry">✕</button>
+    `;
+
+    // Restore on click
+    card.addEventListener('click', (e) => {
+      if (e.target.classList.contains('history-item__delete')) {
+        e.stopPropagation();
+        deleteEntry(item.sessionId);
+        refreshHistoryUI();
+        return;
+      }
+      restoreSession(item);
+    });
+
+    listEl.appendChild(card);
+  });
+}
+
+/**
+ * Restores a past session into the UI.
+ */
+function restoreSession(item) {
+  sessionId = item.sessionId;
+  const { listA, listB, options } = item.data;
+
+  const inputA = document.getElementById('input-a');
+  const inputB = document.getElementById('input-b');
+
+  if (inputA) inputA.value = listA.join('\n');
+  if (inputB) inputB.value = listB.join('\n');
+
+  setDefaults(options);
+  updateCounts('A');
+  updateCounts('B');
+  updateHighlighting();
+  
+  // Close sidebar on restore
+  document.getElementById('sidebar-close')?.click();
+  
+  showToast('Session restored');
+}
+
 
 // ============================================================================
 // KEYBOARD SHORTCUTS

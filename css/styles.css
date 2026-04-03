@@ -1002,6 +1002,306 @@ body {
 }
 
 /* ============================================================
+   14. SIDEBAR (HISTORY)
+   ============================================================ */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: -320px; /* Hidden by default on the right */
+  width: 320px;
+  height: 100%;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
+  z-index: 2000;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar--open {
+  right: 0;
+}
+
+.sidebar-header {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-primary);
+}
+
+.sidebar-header h2 {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin: 0;
+}
+
+.sidebar-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.history-item {
+  position: relative;
+  padding: var(--space-4);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  animation: fadeSlideUp 0.3s ease-out;
+}
+
+.history-item:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+
+.history-item__id {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.history-item__time {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  display: block;
+}
+
+.history-item__delete {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.history-item__delete:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+[data-theme="dark"] .history-item__delete:hover {
+  background: #450a0a;
+  color: #fca5a5;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.sidebar-overlay--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Header History Toggle */
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.history-toggle {
+  display: none; /* Controlled by JS based on history presence */
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all var(--transition-normal);
+  font-size: 1.1rem;
+}
+
+.history-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ============================================================
+   15. LIVE HIGHLIGHTING & DRAG-DROP
+   ============================================================ */
+
+.textarea-container {
+  position: relative;
+  width: 100%;
+}
+
+.textarea-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: var(--space-4); /* Match textarea padding exactly */
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; /* Match textarea font exactly */
+  font-size: var(--font-size-sm); /* Match textarea font-size exactly */
+  line-height: 1.7; /* Match textarea line-height exactly */
+  color: transparent;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  pointer-events: none;
+  z-index: 0;
+  border: none; /* Removed 1px border to match textarea exactly */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.textarea-backdrop mark {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: transparent;
+  border-radius: 2px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  font: inherit;
+  line-height: inherit;
+}
+
+[data-theme="dark"] .textarea-backdrop mark {
+  background-color: rgba(56, 189, 248, 0.15);
+}
+
+.input-panel textarea {
+  position: relative;
+  background: transparent !important;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+
+.input-panel.drag-over {
+  border-color: var(--accent);
+  background-color: rgba(59, 130, 246, 0.05);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="dark"] .input-panel.drag-over {
+  background-color: rgba(56, 189, 248, 0.05);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+}
+
+/* ============================================================
+   16. QUICK COPY & FLOATING UI
+   ============================================================ */
+
+.result-header {
+  position: relative;
+}
+
+.quick-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  transition: all var(--transition-fast);
+  z-index: 20;
+  overflow: visible; /* Prevent flash-text from getting clipped */
+}
+
+.quick-copy:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.quick-copy:active {
+  transform: scale(0.95);
+}
+
+.quick-copy .copy-icon {
+  font-size: 0.9rem;
+}
+
+.quick-copy .flash-text {
+  position: absolute;
+  right: 100%;
+  margin-right: 8px;
+  background: var(--accent);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(10px);
+  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-copy.flashing .flash-text {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.quick-copy.flashing .copy-icon {
+  animation: flarePop 0.4s ease;
+}
+
+@keyframes flarePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); filter: brightness(1.5); }
+  100% { transform: scale(1); }
+}
+
+
+/* ============================================================
    13. RESPONSIVE DESIGN
    ============================================================ */
 

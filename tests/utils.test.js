@@ -14,11 +14,13 @@ import {
   reverseItems,
   splitCSVRow,
   splitByDelimiter,
+  countDuplicates,
   sanitizeForStorage,
+  getClientInfo,
+  debounce,
   escapeHtml,
   toTitleCase,
-  countDuplicates,
-  debounce,
+  generateId,
 } from '../js/utils.js';
 
 // ============================================================================
@@ -342,5 +344,27 @@ describe('debounce', () => {
 
     /* Should have fired exactly once */
     expect(callCount).toBe(1);
+  });
+});
+
+// ============================================================================
+// generateId
+// ============================================================================
+
+describe('generateId', () => {
+  it('generates a string of default length if not provided', () => {
+    const id = generateId();
+    expect(id).toHaveLength(8);
+  });
+
+  it('generates a string of the specified length', () => {
+    const id = generateId(12);
+    expect(id).toHaveLength(12);
+  });
+
+  it('generates unique random strings', () => {
+    const id1 = generateId(8);
+    const id2 = generateId(8);
+    expect(id1).not.toBe(id2);
   });
 });

@@ -11,9 +11,14 @@
 - 🔍 **Compare two lists** — Find what's unique, shared, or combined
 - ⚡ **Instant results** — All processing happens client-side
 - 🎨 **Light & Dark themes** — Animated toggle with persistent preference
-- 📋 **Toolbar actions** — Split, trim, sort, reverse, copy, clear per list
-- 🔧 **Comparison options** — Case sensitivity, space handling, leading zeroes, sorting, case transforms
-- 📊 **Analytics** — Anonymous usage logging to Firebase Firestore
+- 📋 **Toolbar actions** — Split, - **⊣⊢ Trim & ⊜ Dedupe**: Separate actions for cleaning whitespace and removing duplicates.
+- **Drag & Drop**: Append `.txt` or `.csv` files directly to List A/B.
+- **Live Diff Highlighting**: Real-time visual comparison showing matches while you type.
+- **Quick Copy**: One-click floating buttons with animated glare and specialized feedback.
+- **History Sidebar**: Persistent, timestamped comparison logs (Right-side, deletable).
+- **Mobile Responsive**: Optimized layouts for all screen sizes.
+- **Theme Toggle**: Beautiful Light/Dark modes with smooth transitions.
+- **Firebase Analytics**: Anonymous usage logging via Cloud Firestore.
 - 📱 **Responsive** — Desktop-first with mobile support
 - ♿ **Accessible** — Semantic HTML, ARIA labels, keyboard shortcuts
 
@@ -49,19 +54,23 @@ npm run test:watch  # Watch mode
 
 ```
 listdiff/
-├── index.html           # Main page (single-page app)
-├── config.json          # Master configuration file
-├── css/
-│   └── styles.css       # Complete design system + styles
-├── js/
-│   ├── app.js           # Entry point — wires everything together
-│   ├── comparator.js    # Core comparison engine (pure functions)
-│   ├── ui.js            # All DOM manipulation
-│   ├── theme.js         # Light/dark theme toggle
-│   ├── analytics.js     # Firebase Firestore logging
-│   ├── rate-limiter.js  # Client-side rate limiting
-│   ├── config.js        # Configuration loader
-│   └── utils.js         # Shared utility functions
+- `index.html` — Semantic structure & layout
+- `css/styles.css` — Modern design system & animations
+- `js/app.js` — Bootstrapper and module coordinator
+- `js/ui.js` — Core DOM orchestration & event handling
+- `js/history.js` — LocalStorage persistence and session management
+- `js/comparator.js` — Pure set-logic comparison engine
+- `js/utils.js` — Shared utility functions
+- `js/analytics.js` — Firebase Firestore integration
+- `js/rate-limiter.js` — Client-side throttling logic
+- `config.json` — Master site configuration
+```
+
+## Local Storage Support
+ListDiff keeps a history of your recently compared lists in your browser's `localStorage`. This data **never leaves your browser** and is only used to populate the "Recent Comparisons" sidebar for your convenience. You can delete specific entries at any time.
+
+## Tests
+```
 ├── assets/
 │   └── favicon.svg      # Browser tab icon
 ├── tests/
