@@ -385,6 +385,19 @@ body {
   border-color: var(--text-muted);
 }
 
+/* Clear button specific "danger" hover state */
+.btn-icon[data-action="clear"]:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+[data-theme="dark"] .btn-icon[data-action="clear"]:hover {
+  background-color: #450a0a;
+  color: #f87171;
+  border-color: #991b1b;
+}
+
 .btn-icon:active {
   transform: scale(0.95);
 }

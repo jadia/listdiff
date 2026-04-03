@@ -107,7 +107,8 @@
         <div class="input-toolbar">
           <button class="btn-icon" data-action="move" data-target="a" data-to="b" title="Move A → B">A → B</button>
           <button class="btn-icon" data-action="split" data-target="a" title="Split by delimiter">✂ Split</button>
-          <button class="btn-icon" data-action="trim" data-target="a" title="Trim & Deduplicate">⊜ Trim</button>
+          <button class="btn-icon" data-action="trim" data-target="a" title="Remove leading/trailing spaces and empty lines">⊣⊢ Trim</button>
+          <button class="btn-icon" data-action="dedupe" data-target="a" title="Remove identical items from the list">⊜ Dedupe</button>
           <button class="btn-icon" data-action="sort" data-target="a" title="Sort A-Z">↕ Sort</button>
           <button class="btn-icon" data-action="reverse" data-target="a" title="Reverse order">⇅ Rev</button>
           <button class="btn-icon" data-action="copy" data-target="a" title="Copy to clipboard">⎘ Copy</button>
@@ -132,7 +133,8 @@
         <div class="input-toolbar">
           <button class="btn-icon" data-action="move" data-target="b" data-to="a" title="Move B → A">B → A</button>
           <button class="btn-icon" data-action="split" data-target="b" title="Split by delimiter">✂ Split</button>
-          <button class="btn-icon" data-action="trim" data-target="b" title="Trim & Deduplicate">⊜ Trim</button>
+          <button class="btn-icon" data-action="trim" data-target="b" title="Remove leading/trailing spaces and empty lines">⊣⊢ Trim</button>
+          <button class="btn-icon" data-action="dedupe" data-target="b" title="Remove identical items from the list">⊜ Dedupe</button>
           <button class="btn-icon" data-action="sort" data-target="b" title="Sort A-Z">↕ Sort</button>
           <button class="btn-icon" data-action="reverse" data-target="b" title="Reverse order">⇅ Rev</button>
           <button class="btn-icon" data-action="copy" data-target="b" title="Copy to clipboard">⎘ Copy</button>
@@ -210,7 +212,8 @@
           </div>
           <textarea id="result-a-only" readonly aria-label="Items only in List A"></textarea>
           <div class="result-toolbar">
-            <button class="btn-icon" data-action="trim" data-target="a-only">⊜ Trim</button>
+            <button class="btn-icon" data-action="trim" data-target="a-only" title="Remove leading/trailing spaces and empty lines">⊣⊢ Trim</button>
+            <button class="btn-icon" data-action="dedupe" data-target="a-only" title="Remove identical items from the list">⊜ Dedupe</button>
             <button class="btn-icon" data-action="sort" data-target="a-only">↕ Sort</button>
             <button class="btn-icon" data-action="reverse" data-target="a-only">⇅ Rev</button>
             <button class="btn-icon" data-action="copy" data-target="a-only">⎘ Copy</button>
@@ -227,7 +230,8 @@
           </div>
           <textarea id="result-b-only" readonly aria-label="Items only in List B"></textarea>
           <div class="result-toolbar">
-            <button class="btn-icon" data-action="trim" data-target="b-only">⊜ Trim</button>
+            <button class="btn-icon" data-action="trim" data-target="b-only" title="Remove leading/trailing spaces and empty lines">⊣⊢ Trim</button>
+            <button class="btn-icon" data-action="dedupe" data-target="b-only" title="Remove identical items from the list">⊜ Dedupe</button>
             <button class="btn-icon" data-action="sort" data-target="b-only">↕ Sort</button>
             <button class="btn-icon" data-action="reverse" data-target="b-only">⇅ Rev</button>
             <button class="btn-icon" data-action="copy" data-target="b-only">⎘ Copy</button>
@@ -244,7 +248,8 @@
           </div>
           <textarea id="result-intersection" readonly aria-label="Items in both List A and List B"></textarea>
           <div class="result-toolbar">
-            <button class="btn-icon" data-action="trim" data-target="intersection">⊜ Trim</button>
+            <button class="btn-icon" data-action="trim" data-target="intersection" title="Remove leading/trailing spaces and empty lines">⊣⊢ Trim</button>
+            <button class="btn-icon" data-action="dedupe" data-target="intersection" title="Remove identical items from the list">⊜ Dedupe</button>
             <button class="btn-icon" data-action="sort" data-target="intersection">↕ Sort</button>
             <button class="btn-icon" data-action="reverse" data-target="intersection">⇅ Rev</button>
             <button class="btn-icon" data-action="copy" data-target="intersection">⎘ Copy</button>
@@ -261,7 +266,8 @@
           </div>
           <textarea id="result-union" readonly aria-label="All unique items from both lists"></textarea>
           <div class="result-toolbar">
-            <button class="btn-icon" data-action="trim" data-target="union">⊜ Trim</button>
+            <button class="btn-icon" data-action="trim" data-target="union" title="Remove leading/trailing spaces and empty lines">⊣⊢ Trim</button>
+            <button class="btn-icon" data-action="dedupe" data-target="union" title="Remove identical items from the list">⊜ Dedupe</button>
             <button class="btn-icon" data-action="sort" data-target="union">↕ Sort</button>
             <button class="btn-icon" data-action="reverse" data-target="union">⇅ Rev</button>
             <button class="btn-icon" data-action="copy" data-target="union">⎘ Copy</button>

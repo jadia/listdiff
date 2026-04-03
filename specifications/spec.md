@@ -41,11 +41,12 @@
 |---|---|
 | **A → B / B → A** | Moves content from one list to the other (source is cleared) |
 | **✂ Split** | Opens a dialog to split delimited text into individual lines |
-| **⊜ Trim** | Trims whitespace from each item, removes empties, deduplicates |
+| **⊣⊢ Trim** | Removes leading/trailing spaces and empty lines |
+| **⊜ Dedupe** | Removes identical items from the list |
 | **↕ Sort** | Sorts items alphabetically (A-Z) |
 | **⇅ Reverse** | Reverses the order of items |
 | **⎘ Copy** | Copies the textarea content to clipboard |
-| **✕ Clear** | Clears the textarea |
+| **✕ Clear** | Clears the textarea (highlights red on hover) |
 
 ### 2.3 Split Dialog
 
@@ -80,7 +81,7 @@ Each section shows:
 - Section name with mathematical set notation
 - Count badge (animated pop-in)
 - Read-only textarea with results
-- Toolbar: Trim+Dedupe, Sort, Reverse, Copy
+- Toolbar: Trim, Deduplicate, Sort, Reverse, Copy
 
 ### 2.6 Other Features
 

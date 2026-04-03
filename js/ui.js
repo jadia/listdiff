@@ -246,9 +246,18 @@ function handleToolbarAction(btn, area) {
     }
 
     case 'trim': {
-      /* Trim whitespace and remove duplicates */
-      const cleaned = deduplicateItems(trimItems(items));
+      /* Trim leading/trailing whitespace and remove empty lines */
+      const cleaned = trimItems(items);
       textarea.value = cleaned.join('\n');
+      showToast('Whitespace trimmed');
+      break;
+    }
+
+    case 'dedupe': {
+      /* Remove duplicate items, keeping first occurrences */
+      const cleaned = deduplicateItems(items);
+      textarea.value = cleaned.join('\n');
+      showToast('Duplicates removed');
       break;
     }
 
