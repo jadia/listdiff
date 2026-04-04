@@ -55,7 +55,8 @@
 | **Drag & Drop** | Dropping `.txt` or `.csv` files into a textarea appends the file content to existing text. |
 | **Live Highlighting** | Transparent textarea with a backdrop layer that highlights lines identical to the other list in real-time. |
 | **Quick Copy** | Small floating copy icons in result panels with glare animations and localized "Copied!" flash feedback. |
-| **History Sidebar** | Right-side sliding panel containing past comparison snapshots with timestamps and deletion controls. |
+| **History Sidebar** | Right-side sliding panel containing past comparison snapshots with timestamps and deletion controls. Uses `localStorage` for persistence. |
+| **Premium UI** | Uses carefully synchronized CSS for highlight alignment and SVG-based iconography for a high-end feel. |
 
 ### 2.3 Split Dialog
 
@@ -112,9 +113,10 @@ Each section shows:
 app.js (entry point)
 ├── config.js      → loads config.json
 ├── theme.js       → light/dark mode
-├── analytics.js   → Firebase Firestore logging
+├── analytics.js   → Firebase Firestore logging & Anonymous Auth
 │   └── utils.js   → sanitizeForStorage, getClientInfo
 ├── rate-limiter.js → throttles analytics
+├── history.js     → Manage localStorage snapshots and session state
 └── ui.js          → all DOM interaction
     ├── comparator.js → comparison logic
     └── utils.js      → trimItems, sortItems, copyToClipboard, etc.
@@ -140,10 +142,10 @@ comparator.js:
 ui.js renders results into 4 output panels
        ↓
 analytics.js builds log entry (with data truncation)
-       ↓
 rate-limiter checks if logging is allowed
-       ↓
-If allowed → write to Firestore collection "audit_logs"
+If allowed → get current Anonymous Auth UID
+Write to Firestore collection "audit_logs" with serverTimestamp()
+Update Recent Comparisons in localStorage (via history.js)
 ```
 
 ### 3.3 Technology Choices
@@ -157,9 +159,10 @@ If allowed → write to Firestore collection "audit_logs"
 | **Vitest** | Fast, ES-module-native test runner |
 
 ## 6. Storage & Session Management
--   **LocalStorage (Browser-only)**: History snapshots are stored locally.
--   **Session IDs**: Unique IDs generated per tab session (persists until refresh).
--   **Snapshot structure**: Stores List A, List B, Options, and a Timestamp. Limits to top 20 recent entries.
+-   **LocalStorage**: Stores `listdiff_history` array (max 20 entries).
+-   **Session IDs**: 12-character random IDs (e.g., `abc-123-xyz`) generated once per tab load using a custom `generateId` utility to ensure unique event tracking.
+-   **Snapshot structure**: `{ id, timestamp, listA, listB, options, counts }`.
+-   **Persistence**: History remains until manually cleared by the user or localStorage is wiped.
 
 ## 7. Performance Considerations
 
@@ -184,7 +187,7 @@ The master configuration lives in `config.json`. Every configurable value is doc
 
 | Key | Type | Description |
 |---|---|---|
-| `apiKey` | string | Firebase Web API key (public, not secret) |
+| `apiKey` | string | Placeholder `__FIREBASE_API_KEY__` (Injected by GitHub Actions) |
 | `authDomain` | string | Firebase Auth domain |
 | `projectId` | string | Firestore project ID |
 | `storageBucket` | string | Firebase Storage bucket |
@@ -248,12 +251,16 @@ These rules should be set in the Firebase Console under **Firestore → Rules**:
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Audit logs: anyone can create, only admin can read/update/delete
     match /audit_logs/{logId} {
-      allow create: if true;
+      // 1. Only allow creating new logs
+      // 2. Only allow authenticated users (Anonymous auth)
+      // 3. Simple field validation
+      allow create: if request.auth != null 
+                    && request.resource.data.keys().hasAll(['action', 'serverTimestamp'])
+                    && request.resource.data.action in ['compare', 'copy', 'theme_toggle', 'page_load'];
+      
       allow read, update, delete: if false;
     }
-    // Deny everything else
     match /{document=**} {
       allow read, write: if false;
     }
@@ -366,8 +373,9 @@ Each document in `audit_logs` has this structure:
 | **No eval()** | Never used anywhere in the codebase |
 | **No innerHTML** | DOM manipulation uses `textContent` and `value` |
 | **Firebase Rules** | Firestore allows only `create`, denies `read/update/delete` |
-| **Client-side rate limiting** | Throttles analytics writes to prevent flooding |
-| **Subresource Integrity** | Firebase SDK loaded from official Google CDN |
+| **Secret Management** | API Keys injected via `sed` in GitHub Actions; no real keys in repo |
+| **Local Overrides** | `config.local.json` support for development without committing secrets |
+| **Anonymous Auth** | `signInAnonymously()` ensures requests come from a browser session |
 
 ---
 

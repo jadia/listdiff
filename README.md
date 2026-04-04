@@ -2,6 +2,8 @@
 
 > A clean, fast tool to compare two lists and find differences, intersections, and unions.
 
+![ListDiff Screenshot](assets/screenshot.png)
+
 **Live**: [jadia.dev/listdiff](https://jadia.dev/listdiff)
 
 ---
@@ -11,14 +13,13 @@
 - 🔍 **Compare two lists** — Find what's unique, shared, or combined
 - ⚡ **Instant results** — All processing happens client-side
 - 🎨 **Light & Dark themes** — Animated toggle with persistent preference
-- 📋 **Toolbar actions** — Split, - **⊣⊢ Trim & ⊜ Dedupe**: Separate actions for cleaning whitespace and removing duplicates.
-- **Drag & Drop**: Append `.txt` or `.csv` files directly to List A/B.
-- **Live Diff Highlighting**: Real-time visual comparison showing matches while you type.
-- **Quick Copy**: One-click floating buttons with animated glare and specialized feedback.
-- **History Sidebar**: Persistent, timestamped comparison logs (Right-side, deletable).
-- **Mobile Responsive**: Optimized layouts for all screen sizes.
-- **Theme Toggle**: Beautiful Light/Dark modes with smooth transitions.
-- **Firebase Analytics**: Anonymous usage logging via Cloud Firestore.
+- 📋 **Toolbar actions** — Split, - **⊣⊢ Trim & ⊜ Dedupe**: Separate toolbar actions for specific cleaning.
+- **Drag & Drop**: Drop `.txt` or `.csv` files directly into text areas to append content.
+- **Live Diff Highlighting**: Real-time visual comparison showing matches as you type.
+- **Quick Copy**: One-click floating buttons with animated "Copied!" feedback.
+- **History Sidebar**: Persistent, timestamped comparison logs (LocalStorage-based).
+- **Firebase Analytics**: Secure, anonymous usage logging via Cloud Firestore.
+- **Production Secure**: API keys protected via GitHub Secrets and local overrides.
 - 📱 **Responsive** — Desktop-first with mobile support
 - ♿ **Accessible** — Semantic HTML, ARIA labels, keyboard shortcuts
 
@@ -40,11 +41,17 @@ npx serve .
 python3 -m http.server 8000
 ```
 
+### Local Development (Secret Management)
+To use Firebase analytics locally without committing your real API keys:
+1. Create a `config.local.json` file (it is ignored by git).
+2. Copy `config.json` contents into it and add your real `apiKey`.
+3. The app will automatically use the local file first.
+
 ### Run Tests
 
 ```bash
 npm install      # Install vitest (one-time)
-npm test         # Run all 115 tests
+npm test         # Run all tests (120+)
 npm run test:watch  # Watch mode
 ```
 
@@ -58,12 +65,13 @@ listdiff/
 - `css/styles.css` — Modern design system & animations
 - `js/app.js` — Bootstrapper and module coordinator
 - `js/ui.js` — Core DOM orchestration & event handling
-- `js/history.js` — LocalStorage persistence and session management
+- `js/history.js` — LocalStorage persistence & session management
 - `js/comparator.js` — Pure set-logic comparison engine
 - `js/utils.js` — Shared utility functions
-- `js/analytics.js` — Firebase Firestore integration
+- `js/analytics.js` — Firebase Firestore integration & Anonymous Auth
 - `js/rate-limiter.js` — Client-side throttling logic
-- `config.json` — Master site configuration
+- `config.json` — Master site configuration (with placeholders)
+- `config.local.json` — (Optional) Local secret overrides
 ```
 
 ## Local Storage Support
@@ -129,14 +137,12 @@ service cloud.firestore {
 
 ---
 
-## Deployment
+### Deployment & Secrets
 
-Push to `main` → GitHub Actions runs tests → deploys to GitHub Pages.
-
-### Prerequisites
-
-1. Go to repo **Settings → Pages → Source** → select **"GitHub Actions"**
-2. Ensure custom domain (`jadia.dev`) is configured in DNS
+1. Go to repo **Settings → Pages → Source** → select **"GitHub Actions"**.
+2. Add a GitHub Secret named **`FIREBASE_API_KEY`** with your real key.
+3. The `deploy.yml` workflow will automatically inject the secret into `config.json` during deployment.
+4. Ensure custom domain (`jadia.dev`) is configured in DNS.
 
 ---
 
