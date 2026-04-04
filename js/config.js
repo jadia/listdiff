@@ -46,10 +46,23 @@ let config = null;
 export async function loadConfig() {
   try {
     /*
+     * Try loading a local configuration first (for development overrides).
+     * This file is ignored by git (.gitignore) so it's safe for secrets.
      * Use a relative path so it works regardless of where the app is hosted.
-     * Whether it's at jadia.dev/listdiff/ or localhost:3000/, this resolves correctly.
      */
-    const response = await fetch('./config.json');
+    let response;
+    try {
+      const localResponse = await fetch('./config.local.json');
+      if (localResponse.ok) {
+        response = localResponse;
+        console.log('[ListDiff Config] Using local configuration overrides');
+      } else {
+        response = await fetch('./config.json');
+      }
+    } catch (e) {
+      /* fetch() might throw if file doesn't exist in some environments */
+      response = await fetch('./config.json');
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);

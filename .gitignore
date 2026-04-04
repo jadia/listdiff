@@ -13,3 +13,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Local configuration
+config.local.json

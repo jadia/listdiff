@@ -69,6 +69,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Inject secrets into config.json
+        run: |
+          sed -i "s/__FIREBASE_API_KEY__/${{ secrets.FIREBASE_API_KEY }}/g" config.json
+
       #
       # Upload the entire repo root as the Pages artifact.
       # Since this is a static site with no build step,

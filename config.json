@@ -8,7 +8,7 @@
     "footerText": "Made with <span class=\"footer__heart\">❤</span>"
   },
   "firebase": {
-    "apiKey": "AIzaSyBbTnV5UIgUpySHl1rjwfjJP-BtybpDe4E",
+    "apiKey": "__FIREBASE_API_KEY__",
     "authDomain": "listdiff-171b5.firebaseapp.com",
     "projectId": "listdiff-171b5",
     "storageBucket": "listdiff-171b5.firebasestorage.app",
