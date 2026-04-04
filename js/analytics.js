@@ -141,10 +141,25 @@ export async function initAnalytics(firebaseConfig, analyticsConfig, rateLimiter
     /* Import Firebase modules from the CDN (defined in index.html importmap) */
     const { initializeApp } = await import('firebase/app');
     const { getFirestore, collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+    const { getAuth, signInAnonymously } = await import('firebase/auth');
 
     /* Initialize Firebase app */
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    /* Sign in anonymously for session tracking & security rules */
+    let currentUser = null;
+    try {
+      const userCredential = await signInAnonymously(auth);
+      currentUser = userCredential.user;
+    } catch (authError) {
+      console.warn('[ListDiff Analytics] Authentication failed:', authError.message);
+      /*
+       * We continue even if auth fails, as some firestore rules might
+       * still allow writes (or we want to fail gracefully later).
+       */
+    }
 
     /* Get the collection name from config */
     const collectionName = analyticsConfig.collectionName || 'audit_logs';
